@@ -46,6 +46,7 @@ const renderToDom = (divId, textToRender) => {
 
 // *********  HTML COMPONENT FUNCTIONS  ********* //
 // Add Video Button / Modal
+// this function will be helpful to use again so let's make it a function
 const videoBtnModal = () => {
   const domString = `
     <!-- Button trigger modal -->
@@ -107,7 +108,7 @@ const videoBtnModal = () => {
 
 // Video component with default arg value
 // = 'cNjIUSDnb9k'
-const videoPlayer = (videoId) => {
+const videoPlayer = (videoId = 'cNjIUSDnb9k') => {
   const domString = `
   <iframe src="https://www.youtube.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   `;
@@ -116,7 +117,7 @@ const videoPlayer = (videoId) => {
 
 // Filter Button Row
 const filterButtons = () => {
-  let domString = `
+  const domString = `
   <div class="d-flex flex-wrap justify-content-between my-3">
     <button class="btn btn-secondary btn-lg buttonRow" id="music">Music</button>
     <button class="btn btn-secondary btn-lg buttonRow" id="javascript">Javascript</button>
@@ -130,6 +131,7 @@ const filterButtons = () => {
 };
 
 // Cards
+// this fucntion will need a parameter and will explain later in document 
 const cardsOnDom = (array) => {
   let domString = '';
   for (const item of array) {
@@ -157,11 +159,33 @@ const eventListeners = () => {
   // Bootstrap for grabbing modal so can manually open and close
   const formModal = new bootstrap.Modal(document.querySelector('#add-video'));
   
-  // FILTER BUTTON ROW
+  // ****************FILTER BUTTON ROW *************
+  // event is an object
+  // .target is like using dot notation to access the key value
   document.querySelector('#filterContainer').addEventListener('click', (e) => {
-    console.log("You clicked a filter button", e.target.id);
+    // console.log("You clicked a filter button", e.target.id);
     // filter on category (either use .filter or a loop)
     // rerender DOM with new array (use the cardsOnDom function)
+    // FILTER IS A LOOP
+    if (e.target.id === 'clear') {
+      cardsOnDom(data);
+} else if (e.target.id === "favorite") {
+  const favs = data.filter(taco => taco.favorite === true);
+  // we now have an array called favs
+  // look up filter
+  cardsOnDom(favs);
+} else if(e.target.id) {
+  const topics = data.filter(taco => taco.category === e.target.id);
+  cardsOnDom(topics);
+  // OR
+  // const array =[];
+  // for (const vid of data) {
+  //   if (vid.favorite === true) {
+  //     array.push(vid);
+  //   }
+  // }
+  // cardsOnDom(array)
+}
   });
 
   // BUTTONS ON CARDS
@@ -169,13 +193,16 @@ const eventListeners = () => {
     // check to make sure e.target.id is not empty
     if (e.target.id) {
       // get the video ID off the button ID
+    //  const videoStuff =  e.target.id.split("--");
+     const [method, videoId] = e.target.id.split("--");
+    //  video stuff is an arry because of the .split
       // find the index of the object in the array
-
+const index = data.findIndex(taco => taco.videoId === videoId);
       // only listen for events with "watch" or "delete" included in the string
 
       // if watch: grab the ID and rerender the videoPlayer with that ID as an argument
       if (e.target.id.includes('watch')) {
-        console.log("Pressed Watch Button")        
+        videoPlayer(videoId);       
         
         
         // scroll to top of page
@@ -185,8 +212,9 @@ const eventListeners = () => {
       // if delete: find the index of item in array and splice
       // NOTE: if 2 videos have the same videoId, this will delete the first one in the array
       if (e.target.id.includes('delete')) {
-        console.log("Delete Button Pressed")
+        data.splice(index,1);
         // rerender DOM with updated data array (use the cardsOnDom function)
+        cardsOnDom(data);
       }
     }
   });
@@ -198,8 +226,14 @@ const eventListeners = () => {
     // grab the values from the form inputs and create an object
     // push that object to the data array    
     // rerender cards using the cardsOnDom function and pass it the updated data array
-    
-    
+    const newVIdeoObj = {
+      videoId: document.querySelector('#videoId').ariaValueMax,
+      title: document.querySelector("#title").value,
+      category:document.querySelector('#category').value,
+      favorite:document.querySelector('#favorite').checked,
+    }
+    data.push(newVIdeoObj);
+    cardsOnDom(data);
     // Close modal and reset form
     formModal.hide()
     form.reset();
